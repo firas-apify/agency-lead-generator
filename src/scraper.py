@@ -2,10 +2,18 @@
 Shared scraping logic: fetch pages, parse .provider-row cards, paginate.
 Used by both the Apify Actor (main.py) and the web API (web.py).
 """
+import asyncio
+import random
 from urllib.parse import urljoin
 
 import httpx
 from bs4 import BeautifulSoup
+
+# Default request delay range (seconds) between pages to be polite
+DEFAULT_REQUEST_DELAY = (0.5, 1.5)
+# Retry config: max attempts per URL, base backoff seconds
+MAX_RETRIES = 3
+RETRY_BACKOFF_BASE = 2.0
 
 
 def _text(soup_element) -> str | None:
@@ -91,14 +99,18 @@ async def run_scraper(
     start_url: str,
     max_items: int = 50,
     proxy_url: str | None = None,
+    request_delay: tuple[float, float] | None = DEFAULT_REQUEST_DELAY,
+    max_retries: int = MAX_RETRIES,
 ) -> list[dict]:
     """
     Scrape agency profile cards from start_url with pagination.
+    Uses retries with exponential backoff and optional delay between requests.
     Returns a list of dicts with keys: agency_name, website_url,
     minimum_project_size, hourly_rate, location.
     """
     items: list[dict] = []
     current_url = start_url
+    delay_range = request_delay or (0, 0)
 
     async with httpx.AsyncClient(
         proxy=proxy_url,
@@ -107,11 +119,20 @@ async def run_scraper(
         headers={"User-Agent": "Mozilla/5.0 (compatible; Apify Agency Lead Generator)"},
     ) as client:
         while current_url and len(items) < max_items:
-            try:
-                response = await client.get(current_url)
-                response.raise_for_status()
-            except httpx.HTTPError:
-                break
+            last_error: Exception | None = None
+            for attempt in range(max_retries):
+                try:
+                    response = await client.get(current_url)
+                    response.raise_for_status()
+                    last_error = None
+                    break
+                except httpx.HTTPError as e:
+                    last_error = e
+                    if attempt < max_retries - 1:
+                        backoff = RETRY_BACKOFF_BASE ** attempt + random.uniform(0, 1)
+                        await asyncio.sleep(backoff)
+            if last_error is not None:
+                raise last_error
 
             soup = BeautifulSoup(response.text, "html.parser")
             cards = parse_provider_cards(soup, current_url)
@@ -128,5 +149,9 @@ async def run_scraper(
             if not next_url or next_url == current_url:
                 break
             current_url = next_url
+
+            if delay_range[1] > 0:
+                delay = random.uniform(delay_range[0], delay_range[1])
+                await asyncio.sleep(delay)
 
     return items

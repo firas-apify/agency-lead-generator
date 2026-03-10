@@ -5,7 +5,7 @@ from scraper import run_scraper
 
 async def main() -> None:
     async with Actor:
-        actor_input = await Actor.get_input()
+        actor_input = await Actor.get_input() or {}
         start_url = actor_input.get("start_url")
         if not start_url:
             raise ValueError("start_url is required")

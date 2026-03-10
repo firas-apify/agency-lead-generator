@@ -54,14 +54,44 @@ docker run -e APIFY_IS_AT_HOME=1 -e APIFY_INPUT_KEY=default agency-lead-generato
 
 The Dockerfile uses Python 3.11, Poetry, and runs `src/main.py` by default.
 
+## Run on Apify
+
+To run this Actor on the [Apify platform](https://apify.com):
+
+1. **From GitHub (recommended)**  
+   - In [Apify Console](https://console.apify.com/) go to **Actors** → **Create new** → **Import from GitHub**.  
+   - Connect your GitHub account, select the `firas-apify/agency-lead-generator` repo (or your fork).  
+   - Apify will use the Dockerfile and `.actor/actor.json` to build and run the Actor.  
+   - Trigger runs from the Console or via the [Apify API](https://docs.apify.com/api/v2).
+
+2. **Using Apify CLI**  
+   - Install the [Apify CLI](https://docs.apify.com/cli) and log in: `apify login`.  
+   - From the project root run: `apify push` to build and deploy the Actor to your Apify account.
+
+Input is the same as the schema: `start_url` (required) and `max_items` (optional, default 50). Results are stored in the run’s default dataset.
+
+## Tests
+
+```bash
+poetry install
+poetry run pytest tests/ -v
+```
+
+Tests cover the scraper (parsing, pagination, `run_scraper` with mocked HTTP) and the web API (home, health, input schema, `/run` with mocked scraper).
+
 ## Project structure
 
 ```
 .actor/
+  actor.json          # Apify Actor definition (name, version, dockerfile, input)
   INPUT_SCHEMA.json   # Actor input schema (start_url, max_items)
 src/
   main.py             # Actor entrypoint: fetch, parse, paginate, push_data
+  scraper.py          # Shared scraping logic (retries, backoff, delay)
   web.py              # FastAPI app: home page + Swagger at /docs
+tests/
+  test_scraper.py     # Scraper and parsing tests
+  test_web.py         # Web API tests
 Dockerfile
 pyproject.toml
 poetry.lock

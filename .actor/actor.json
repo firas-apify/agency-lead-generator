@@ -1,0 +1,10 @@
+{
+    "actorSpecification": 1,
+    "name": "agency-lead-generator",
+    "title": "Agency Lead Generator",
+    "description": "Scrapes agency profile cards from a start URL with pagination. Extracts agency name, website URL, minimum project size, hourly rate, and location. Uses Apify Proxy.",
+    "version": "0.1",
+    "buildTag": "latest",
+    "dockerfile": "../Dockerfile",
+    "input": "./INPUT_SCHEMA.json"
+}
