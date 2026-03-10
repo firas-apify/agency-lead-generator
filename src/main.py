@@ -13,8 +13,12 @@ async def main() -> None:
 
         Actor.log.info(f"Starting with URL: {start_url}, max_items: {max_items}")
 
-        proxy_config = await Actor.create_proxy_configuration()
-        proxy_url = await proxy_config.new_url() if proxy_config else None
+        proxy_url = None
+        try:
+            proxy_config = await Actor.create_proxy_configuration()
+            proxy_url = await proxy_config.new_url() if proxy_config else None
+        except Exception as e:
+            Actor.log.warning(f"Proxy configuration unavailable, continuing without proxy: {e!s}")
 
         items = await run_scraper(
             start_url=start_url,
