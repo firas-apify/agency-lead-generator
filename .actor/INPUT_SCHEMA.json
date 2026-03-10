@@ -1,0 +1,23 @@
+{
+    "title": "Agency Lead Generator input",
+    "description": "Input for the Agency Lead Generator Actor.",
+    "type": "object",
+    "schemaVersion": 1,
+    "properties": {
+        "start_url": {
+            "title": "Start URL",
+            "type": "string",
+            "description": "The URL to start scraping from.",
+            "editor": "textfield"
+        },
+        "max_items": {
+            "title": "Max items",
+            "type": "integer",
+            "description": "Maximum number of items to scrape.",
+            "default": 50,
+            "minimum": 1,
+            "editor": "number"
+        }
+    },
+    "required": ["start_url"]
+}

@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "agency-lead-generator"
+version = "0.1.0"
+description = "Apify Actor for agency lead generation"
+authors = []
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+apify = "^1.7"
+httpx = "^0.28"
+beautifulsoup4 = "^4.12"
+fastapi = "^0.115"
+uvicorn = { extras = ["standard"], version = "^0.32" }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.build"
