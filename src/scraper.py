@@ -116,6 +116,7 @@ async def run_scraper(
         proxy=proxy_url,
         follow_redirects=True,
         timeout=30.0,
+        trust_env=False,
         headers={"User-Agent": "Mozilla/5.0 (compatible; Apify Agency Lead Generator)"},
     ) as client:
         while current_url and len(items) < max_items:
